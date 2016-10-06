@@ -41,7 +41,6 @@
                 android:layout_marginLeft="8dp"
                 android:includeFontPadding="false"
                 android:textSize="16sp"
-                android:background="@color/background"
                 />
         </LinearLayout>
         <LinearLayout

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">陌生号码识别器</string>
+    <string name="edit_hint_phone_number">请输入电话号码</string>
+    <string name="permission_request_draw_overlay">需要显示悬浮窗的权限</string>
+    <string name="permission_request_denied">权限不足</string>
+    <string name="unknown_number">未知的号码</string>
+    <string name="loading">识别中…</string>
+    <string name="tap_to_retry">加载失败，点击重试…</string>
+</resources>

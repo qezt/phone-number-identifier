@@ -7,9 +7,11 @@ import com.android.volley.Cache;
 import com.android.volley.Network;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.BasicNetwork;
 import com.android.volley.toolbox.DiskBasedCache;
 import com.android.volley.toolbox.HurlStack;
+import com.android.volley.toolbox.Volley;
 
 import java.io.File;
 
@@ -39,6 +41,7 @@ public class RequestManager {
 
         // Start the queue
         requestQueue.start();
+        VolleyLog.DEBUG = true;
     }
 
     public void addRequest(Request request) {

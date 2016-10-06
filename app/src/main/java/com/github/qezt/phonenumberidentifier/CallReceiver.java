@@ -13,11 +13,16 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
 public class CallReceiver extends BroadcastReceiver {
+    private static String state;
+    public static boolean duringCall() {
+        return state == null || ! state.equals(TelephonyManager.EXTRA_STATE_IDLE);
+    }
+
     @Override
     public void onReceive(Context context, Intent intent) {
         String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
         String incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
-
+        CallReceiver.state = state;
         if (state == null || ! state.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
             return;
         }

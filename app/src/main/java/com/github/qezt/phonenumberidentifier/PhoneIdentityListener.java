@@ -4,7 +4,7 @@ import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.graphics.PixelFormat;
 import android.os.Handler;
-import android.support.annotation.Nullable;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -17,56 +17,66 @@ import android.view.animation.DecelerateInterpolator;
 import com.android.volley.Response;
 import com.github.qezt.phonenumberidentifier.databinding.FloatingInfoBinding;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-class PhoneIdentityListener implements Response.Listener<String> {
+class PhoneIdentityListener implements Response.Listener<PhoneNumberInfo> {
     @Override
-    public void onResponse(String response) {
-        String location = extractLocation(response);
-        String tag = extractTag(response);
-        String desc = extractDesc(response);
-
+    public void onResponse(PhoneNumberInfo phoneNumberInfo) {
         Context context = Application.instance();
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         final FloatingInfoBinding binding = DataBindingUtil.inflate(layoutInflater, R.layout.floating_info, null, false);
 
-        binding.location.setText(location);
-        if (TextUtils.isEmpty(tag)) {
+        if (TextUtils.isEmpty(phoneNumberInfo.location)) {
+            binding.location.setText(R.string.unknown_number);
+        } else {
+            binding.location.setText(phoneNumberInfo.location);
+        }
+        if (TextUtils.isEmpty(phoneNumberInfo.tag)) {
             binding.tag.setVisibility(View.GONE);
         } else {
             binding.tag.setVisibility(View.VISIBLE);
-            binding.tag.setText(tag);
+            binding.tag.setText(phoneNumberInfo.tag);
         }
 
-        if (TextUtils.isEmpty(desc)) {
+        if (TextUtils.isEmpty(phoneNumberInfo.tagDesc)) {
             binding.tagDesc.setVisibility(View.GONE);
         } else {
             binding.tagDesc.setVisibility(View.VISIBLE);
-            binding.tagDesc.setText(desc);
+            binding.tagDesc.setText(phoneNumberInfo.tagDesc);
         }
 
         final WindowManager windowManager = (WindowManager) context.getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
 
         WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
-        layoutParams.type = WindowManager.LayoutParams.TYPE_PHONE;
-        layoutParams.flags = WindowManager.LayoutParams.FLAG_FULLSCREEN;
-        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-//                | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+//        layoutParams.type = WindowManager.LayoutParams.TYPE_PHONE;
+        layoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
+        layoutParams.flags = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
+//                | WindowManager.LayoutParams.FLAG_FULLSCREEN
+//                | WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON
+//                | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+//                | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+//                | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD;
+//        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
         layoutParams.format = PixelFormat.TRANSLUCENT;
         layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
         layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
         layoutParams.gravity = Gravity.BOTTOM;
         windowManager.addView(binding.getRoot(), layoutParams);
         final View[] popup = new View[]{binding.getRoot()};
-        new Handler().postDelayed(new Runnable() {
+        // The floating window will hide after 10min
+        final Handler handler = new Handler();
+        final long startTime = SystemClock.elapsedRealtime();
+        handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (popup[0] == null) return;
-                popup[0] = null;
-                windowManager.removeView(binding.getRoot());
+                long now = SystemClock.elapsedRealtime();
+                if (now - startTime > 60000 || ! CallReceiver.duringCall()) {
+                    popup[0] = null;
+                    windowManager.removeView(binding.getRoot());
+                } else {
+                    handler.postDelayed(this, 700);
+                }
             }
-        }, 50000);
+        }, 700);
         binding.getRoot().getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             @Override
             public boolean onPreDraw() {
@@ -76,14 +86,6 @@ class PhoneIdentityListener implements Response.Listener<String> {
                 return false;
             }
         });
-//        binding.getRoot().setOnClickListener(new OnDebouncedClickListener() {
-//            @Override
-//            public void onDebouncedClickClick() {
-//                if (popup[0] == null) return;
-//                windowManager.removeView(binding.getRoot());
-//                popup[0] = null;
-//            }
-//        });
         binding.getRoot().setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -95,32 +97,4 @@ class PhoneIdentityListener implements Response.Listener<String> {
         });
     }
 
-    @Nullable
-    private String extractLocation(String body) {
-        Pattern pattern = Pattern.compile(
-                "<div\\s+class=\"mh-tel-adr\"[^>]*>\\s*<p>([^<]*)</p>",
-                Pattern.MULTILINE|Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(body);
-        if (! matcher.find()) return null;
-        String location = matcher.group(1);
-        return location.replaceAll("[\n\\s]+", " ").trim();
-    }
-
-    private String extractTag(String body) {
-        Pattern pattern = Pattern.compile(
-                "<div\\s+class=\"mh-tel-mark\"[^>]*>\\s*([^<]+)\\s*</div>",
-                Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(body);
-        if (! matcher.find()) return null;
-        return matcher.group(1).replaceAll("[\n\\s]+", " ").trim();
-    }
-
-    private String extractDesc(String body) {
-        Pattern pattern = Pattern.compile(
-                "<div\\s+class=\"mh-tel-desc\"[^>]*>\\s*(.+?)\\s*</div>",
-                Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(body);
-        if (! matcher.find()) return null;
-        return matcher.group(1).replaceAll("<[^>]*?>", " ").replaceAll("\\s+", " ").trim();
-    }
 }
