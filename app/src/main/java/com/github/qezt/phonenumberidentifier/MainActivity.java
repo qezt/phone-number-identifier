@@ -57,21 +57,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkPhonePermission() {
-        Dexter.checkPermissions(new MultiplePermissionsListener() {
-            @Override
-            public void onPermissionsChecked(MultiplePermissionsReport report) {
-                if (! report.areAllPermissionsGranted()) {
-                    Toast.makeText(MainActivity.this, R.string.permission_request_denied, Toast.LENGTH_SHORT).show();
-                    return;
-                }
-            }
+        Dexter.withActivity(this)
+                .withPermissions(Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CONTACTS)
+                .withListener(new MultiplePermissionsListener() {
+                    @Override
+                    public void onPermissionsChecked(MultiplePermissionsReport report) {
+                        if (! report.areAllPermissionsGranted()) {
+                            Toast.makeText(MainActivity.this, R.string.permission_request_denied, Toast.LENGTH_SHORT).show();
+                        }
+                    }
 
-            @Override
-            public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
+                    @Override
+                    public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
 //                Toast.makeText(MainActivity.this, "Showing Rationale", Toast.LENGTH_SHORT).show();
-                token.continuePermissionRequest();
-            }
-        }, Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CONTACTS);
+                        token.continuePermissionRequest();
+                    }
+                });
     }
 
     @Override

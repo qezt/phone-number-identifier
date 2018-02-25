@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.github.qezt.phonenumberidentifier.databinding.FloatingInfoBinding;
@@ -42,14 +43,18 @@ class PhoneIdentityListener implements Response.Listener<PhoneNumberInfo> {
             binding.tagDesc.setVisibility(View.VISIBLE);
             binding.tagDesc.setText(phoneNumberInfo.tagDesc);
         }
+//        Toast.makeText(context, "hello, showing", Toast.LENGTH_LONG).show();
 
         final WindowManager windowManager = (WindowManager) context.getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
 
         WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
 //        layoutParams.type = WindowManager.LayoutParams.TYPE_PHONE;
-        layoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
-        layoutParams.flags = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
-//                | WindowManager.LayoutParams.FLAG_FULLSCREEN
+//        layoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
+        layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+//        layoutParams.flags = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+        layoutParams.flags = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+                | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                | WindowManager.LayoutParams.FLAG_FULLSCREEN;
 //                | WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON
 //                | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
 //                | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON

@@ -1,6 +1,5 @@
 package com.github.qezt.phonenumberidentifier;
 
-import com.android.annotations.Nullable;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
@@ -52,7 +51,6 @@ class QueryPhoneIdRequest extends Request<PhoneNumberInfo> {
         listener.onResponse(response);
     }
 
-    @Nullable
     private String extractLocation(String body) {
         Pattern pattern = Pattern.compile(
                 "<div\\s+class=\"mh-tel-adr\"[^>]*>\\s*<p>([^<]*)</p>",
