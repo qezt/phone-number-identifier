@@ -56,7 +56,7 @@
             >
 
             <TextView
-                android:id="@+id/tag"
+                android:id="@+id/tagName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:includeFontPadding="false"
@@ -69,7 +69,7 @@
                 tools:ignore="HardcodedText"
                 />
             <TextView
-                android:id="@+id/tag_desc"
+                android:id="@+id/tagDesc"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
